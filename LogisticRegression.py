@@ -1,9 +1,9 @@
-import json
 import pandas as pd
 import pickle
 import time
 from ImageLoader import ImageLoader
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from typing import Tuple
 
@@ -23,18 +23,14 @@ def scale_data(features: pd.DataFrame) -> pd.DataFrame:
     return x_train
 
 
-def fit_log_reg(x_train: pd.DataFrame, y_train: pd.Series) -> LogisticRegression:
+def grid_search_log_reg(x_train: pd.DataFrame, y_train: pd.Series) -> LogisticRegression:
     start = time.time()
-    lr = LogisticRegression(penalty="l1", solver="saga", tol=1e-2, max_iter=50)
-    lr.fit(x_train, y_train)
-    print("Logistic regression fit finished in:", (time.time() - start) / 3600, "hours")
-    return lr
-
-
-def score_fit_log_reg(lr: LogisticRegression, x_data: pd.DataFrame, y_data: pd.Series) -> None:
-    start = time.time()
-    print(lr.score(x_data, y_data))
-    print("LR scoring finished in:", time.time() - start, "seconds")
+    grid = GridSearchCV(LogisticRegression(penalty="l1", solver="saga", tol=1e-2, max_iter=50),
+                        param_grid={"C": [.5, .1, .05, .01]}, n_jobs=-1)
+    grid.fit(x_train, y_train)
+    print("Logistic regression grid search fit finished in:", (time.time() - start) / 3600, "hours")
+    print("Best Params:", grid.best_params_, "Best Score:", grid.best_score_)
+    return grid.best_estimator_
 
 
 def save_theta(lr: LogisticRegression, filename: str = "log_reg_theta.pkl") -> None:
@@ -49,10 +45,8 @@ def load_theta(filename: str = "log_reg_theta.pkl") -> LogisticRegression:
 
 def train_lr_model() -> None:
     features, target = load_image_dataset()
-    # TODO: Get train/test data
     x_train = scale_data(features)
-    lr = fit_log_reg(x_train, target)
-    score_fit_log_reg(lr, x_train, target)
+    lr = grid_search_log_reg(x_train, target)
     save_theta(lr)
 
 
