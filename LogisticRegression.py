@@ -10,23 +10,15 @@ from typing import Tuple
 
 def load_image_dataset() -> Tuple[pd.DataFrame, pd.Series]:
     loader = ImageLoader()
-    features, y_train = loader.load_images()
+    _, y_train = loader.load_images()
+    features = loader.scale_data()
     return features, y_train
-
-
-def scale_data(features: pd.DataFrame) -> pd.DataFrame:
-    start = time.time()
-    scaler = StandardScaler(copy=False)
-    scaler.fit(features)
-    x_train = scaler.transform(features)
-    print("Scaler finished in:", time.time() - start, "seconds")
-    return x_train
 
 
 def grid_search_log_reg(x_train: pd.DataFrame, y_train: pd.Series) -> LogisticRegression:
     start = time.time()
     grid = GridSearchCV(LogisticRegression(penalty="l1", solver="saga", tol=1e-2, max_iter=50),
-                        param_grid={"C": [.5, .1, .05, .01]}, n_jobs=-1)
+                        param_grid={"C": [.5, .1, .05, .01]}, n_jobs=-1, pre_dispatch=2)
     grid.fit(x_train, y_train)
     print("Logistic regression grid search fit finished in:", (time.time() - start) / 3600, "hours")
     print("Best Params:", grid.best_params_, "Best Score:", grid.best_score_)
@@ -45,8 +37,7 @@ def load_theta(filename: str = "log_reg_theta.pkl") -> LogisticRegression:
 
 def train_lr_model() -> None:
     features, target = load_image_dataset()
-    x_train = scale_data(features)
-    lr = grid_search_log_reg(x_train, target)
+    lr = grid_search_log_reg(features, target)
     save_theta(lr)
 
 

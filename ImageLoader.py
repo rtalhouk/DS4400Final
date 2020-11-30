@@ -29,7 +29,7 @@ class ImageLoader:
         self.images = None
         self.classes = None
         self.grayscale = grayscale
-        self.scaler = StandardScaler(copy=True)
+        self.scaler = StandardScaler(copy=False)
 
     def load_images(self) -> Tuple[pd.DataFrame, pd.Series]:
         if self.images is not None:
@@ -54,11 +54,10 @@ class ImageLoader:
     def scale_data(self, data: Optional[pd.DataFrame] = None) -> pd.DataFrame:
         start = time.time()
         if data is None:
-            res = self.scaler.transform(self.images)
-        else:
-            res = self.scaler.transform(data)
+            data = self.images
+        self.scaler.transform(data, copy=False)
         print("Scaler finished in:", time.time() - start, "seconds")
-        return res
+        return data
 
     @staticmethod
     def get_dataset_size(image_dir, size) -> Tuple[int, int]:
