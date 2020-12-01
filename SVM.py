@@ -7,8 +7,8 @@ from sklearn.preprocessing import StandardScaler
 from typing import Tuple
 
 
-def load_image_dataset() -> Tuple[pd.DataFrame, pd.Series]:
-    loader = ImageLoader()
+def load_image_dataset(image_dir) -> Tuple[pd.DataFrame, pd.Series]:
+    loader = ImageLoader(image_dir)
     features, y_train = loader.load_images()
     return features, y_train
 
@@ -24,7 +24,7 @@ def scale_data(features: pd.DataFrame) -> pd.DataFrame:
 
 def fit_svm(x_train: pd.DataFrame, y_train: pd.Series) -> LinearSVC:
     start = time.time()
-    svm = LinearSVC(loss="hinge", penalty="l2")
+    svm = LinearSVC(loss="hinge", penalty="l2", C=0.000001)
     svm.fit(x_train, y_train)
     print("LinearSVC fit finished in:", (time.time() - start) / 3600, "hours")
     return svm
@@ -47,13 +47,20 @@ def load_theta(filename: str = "svm_theta.pkl") -> LinearSVC:
 
 
 def train_svm_model() -> None:
-    features, target = load_image_dataset()
+    features, target = load_image_dataset("./images/asl_alphabet_train/asl_alphabet_train/")
     # TODO: Get train/test data
     x_train = scale_data(features)
     svm = fit_svm(x_train, target)
     score_fit_svm(svm, x_train, target)
     save_theta(svm)
 
+def test_svm_model() -> None:
+    features, target = load_image_dataset("./images/asl_alphabet_test/asl_alphabet_test/")
+    x_test = scale_data(features)
+    svm = load_theta("svm_theta.pkl")
+    score_fit_svm(svm, x_test, target)
+
 
 if __name__ == "__main__":
     train_svm_model()
+    test_svm_model()
