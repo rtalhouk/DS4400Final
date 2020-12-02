@@ -30,6 +30,10 @@ class ImageLoader:
         self.classes = None
         self.grayscale = grayscale
         self.scaler = StandardScaler(copy=False)
+        self.class_map = {chr(letter): idx for idx, letter in enumerate(range(ord("A"), ord("Z") + 1))}
+        self.class_map["del"] = len(self.class_map)
+        self.class_map["space"] = len(self.class_map)
+        self.class_map["nothing"] = len(self.class_map)
 
     def load_images(self) -> Tuple[pd.DataFrame, pd.Series]:
         if self.images is not None:
@@ -37,15 +41,15 @@ class ImageLoader:
 
         print("Allocating image space...")
         size = self.get_dataset_size(self.image_dir, self.size)
-        self.images = pd.DataFrame(data=np.zeros(size), columns=[i for i in range(self.size * self.size)])
-        self.classes = pd.Series(data=np.full(size[0], "None"), index=self.images.index)
+        self.images = pd.DataFrame(data=np.zeros(size, dtype=np.float32), columns=[i for i in range(self.size * self.size)])
+        self.classes = pd.Series(data=np.zeros(size[0], dtype=np.byte), index=self.images.index)
         next_idx = (i for i in self.images.index)
         print("Done. Loading image sets.")
 
         start = time.time()
         for entry in os.scandir(self.image_dir):
             self._load_subdir(entry.name, entry.path, self.images, self.classes, self.grayscale, self.size,
-                              next_idx)
+                              next_idx, self.class_map)
             print(entry.name, "loaded.")
         print("Done loading images, took", (time.time() - start) / 60, "minutes")
         self.scaler.fit(self.images)
@@ -69,7 +73,7 @@ class ImageLoader:
         return img_count, img_size
 
     @staticmethod
-    def _load_subdir(letter, letter_dir, images, classes, grayscale, size, next_idx):
+    def _load_subdir(letter, letter_dir, images, classes, grayscale, size, next_idx, class_map):
         for img_entry in os.scandir(letter_dir):
             img = Image.open(img_entry.path, "r")
             width, height = img.size
@@ -89,4 +93,4 @@ class ImageLoader:
             curr_idx = next(next_idx)
             images.loc[curr_idx] = img_data
             if classes is not None:
-                classes.loc[curr_idx] = letter
+                classes.loc[curr_idx] = class_map[letter]
