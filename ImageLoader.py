@@ -3,12 +3,13 @@ import pandas as pd
 import os
 import time
 from PIL import Image
-from typing import Tuple
+from sklearn.preprocessing import StandardScaler
+from typing import Tuple, Optional
 
 
 class ImageLoader:
     def __init__(self, image_dir: str = "./images/asl_alphabet_train/asl_alphabet_train/",
-                 grayscale: bool = True) -> None:
+                 grayscale: bool = True, image_size: int = 80) -> None:
         """
         Prepares the image loader with the directory of images.
 
@@ -24,42 +25,52 @@ class ImageLoader:
         :param image_dir: The directory storing the images
         """
         self.image_dir = image_dir
-        self.size = 80
+        self.size = image_size
         self.images = None
         self.classes = None
         self.grayscale = grayscale
-        self.next = None
+        self.scaler = StandardScaler(copy=False)
 
     def load_images(self) -> Tuple[pd.DataFrame, pd.Series]:
         if self.images is not None:
-            return self.images.iloc[:, :-1], self.images.iloc[:, -1]
+            return self.images, self.classes
 
-        size = self.get_dataset_size()
+        print("Allocating image space...")
+        size = self.get_dataset_size(self.image_dir, self.size)
         self.images = pd.DataFrame(data=np.zeros(size), columns=[i for i in range(self.size * self.size)])
         self.classes = pd.Series(data=np.full(size[0], "None"), index=self.images.index)
-        self.next = (i for i in self.images.index)
+        next_idx = (i for i in self.images.index)
+        print("Done. Loading image sets.")
 
         start = time.time()
         for entry in os.scandir(self.image_dir):
-            self._load_subdir(entry.name, entry.path)
+            self._load_subdir(entry.name, entry.path, self.images, self.classes, self.grayscale, self.size,
+                              next_idx)
             print(entry.name, "loaded.")
         print("Done loading images, took", (time.time() - start) / 60, "minutes")
+        self.scaler.fit(self.images)
         return self.images, self.classes
 
-    def get_dataset_size(self) -> Tuple[int, int]:
-        img_size = self.size * self.size
+    def scale_data(self, data: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+        start = time.time()
+        if data is None:
+            data = self.images
+        self.scaler.transform(data, copy=False)
+        print("Scaler finished in:", time.time() - start, "seconds")
+        return data
+
+    @staticmethod
+    def get_dataset_size(image_dir, size) -> Tuple[int, int]:
+        img_size = size * size
         img_count = 0
-        for entry in os.scandir(self.image_dir):
+        for entry in os.scandir(image_dir):
             img_count += len(os.listdir(entry.path))
 
         return img_count, img_size
 
-    def _load_subdir(self, letter, letter_dir):
-        i = -1
+    @staticmethod
+    def _load_subdir(letter, letter_dir, images, classes, grayscale, size, next_idx):
         for img_entry in os.scandir(letter_dir):
-            i += 1
-            if i % 4 != 0:
-                continue
             img = Image.open(img_entry.path, "r")
             width, height = img.size
             if width != height:
@@ -69,12 +80,13 @@ class ImageLoader:
                 right = (width + new_size) / 2
                 bottom = (width + new_size) / 2
                 img = img.crop((left, top, right, bottom))
-            if min(width, height) != self.size:
-                img = img.resize((self.size, self.size))
-            if self.grayscale:
+            if min(width, height) != size:
+                img = img.resize((size, size))
+            if grayscale:
                 img = img.convert("L")
 
             img_data = list(img.getdata())
-            curr_idx = next(self.next)
-            self.images.loc[curr_idx] = img_data
-            self.classes.loc[curr_idx] = letter
+            curr_idx = next(next_idx)
+            images.loc[curr_idx] = img_data
+            if classes is not None:
+                classes.loc[curr_idx] = letter
