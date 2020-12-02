@@ -17,8 +17,10 @@ def load_image_dataset() -> Tuple[pd.DataFrame, pd.Series]:
 
 def grid_search_log_reg(x_train: pd.DataFrame, y_train: pd.Series) -> LogisticRegression:
     start = time.time()
-    grid = GridSearchCV(LogisticRegression(penalty="l1", solver="saga", tol=1e-2, max_iter=50),
-                        param_grid={"C": [.5, .1, .05, .01]})
+    grid = GridSearchCV(LogisticRegression(penalty="l1", solver="saga", tol=1e-2, max_iter=70),
+                        param_grid={"C": [.5, .1, .01]}, cv=2)
+    # Logistic regression grid search fit finished in: 9.175912071665127 hours
+    # Best Params: {'C': 0.1} Best Score: 0.1995057471264368
     grid.fit(x_train, y_train)
     print("Logistic regression grid search fit finished in:", (time.time() - start) / 3600, "hours")
     print("Best Params:", grid.best_params_, "Best Score:", grid.best_score_)
