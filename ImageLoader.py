@@ -9,7 +9,7 @@ from typing import Tuple, Optional
 
 class ImageLoader:
     def __init__(self, image_dir: str = "./images/asl_alphabet_train/asl_alphabet_train/",
-                 grayscale: bool = True, image_size: int = 80) -> None:
+                 grayscale: bool = True, image_size: int = 80, num_class=False) -> None:
         """
         Prepares the image loader with the directory of images.
 
@@ -30,10 +30,17 @@ class ImageLoader:
         self.classes = None
         self.grayscale = grayscale
         self.scaler = StandardScaler(copy=False)
-        self.class_map = {chr(letter): idx for idx, letter in enumerate(range(ord("A"), ord("Z") + 1))}
-        self.class_map["del"] = len(self.class_map)
-        self.class_map["space"] = len(self.class_map)
-        self.class_map["nothing"] = len(self.class_map)
+        if num_class:
+            self.class_map = {chr(letter): idx for idx, letter in enumerate(range(ord("A"), ord("Z") + 1))}
+            self.class_map["del"] = len(self.class_map)
+            self.class_map["space"] = len(self.class_map)
+            self.class_map["nothing"] = len(self.class_map)
+        else:
+            self.class_map = {chr(letter): chr(letter) for letter in range(ord("A"), ord("Z") + 1)}
+            self.class_map["del"] = "del"
+            self.class_map["space"] = "space"
+            self.class_map["nothing"] = "nothing"
+            
 
     def load_images(self) -> Tuple[pd.DataFrame, pd.Series]:
         if self.images is not None:
