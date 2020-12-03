@@ -49,7 +49,8 @@ def load_theta(filename: str = "log_reg_theta.pkl") -> LogisticRegression:
 
 def train_lr_model() -> None:
     features, target = load_image_dataset()
-    lr = grid_search_log_reg(features, target)
+    #lr = grid_search_log_reg(features, target)
+    lr = create_best(features, target)
     save_theta(lr)
 
 
