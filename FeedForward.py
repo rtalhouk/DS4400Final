@@ -13,11 +13,13 @@ def main():
     print(model.summary())
     model.compile(optimizer="adam", loss=MeanSquaredError(), metrics=["accuracy"])
     il = ImageLoader()
-    _, targets = il.load_images()
-    features = il.scale_data()
-    hist = model.fit(x=_.values / 255.0, y=targets.values, epochs=10, validation_split=.2)
-    print(model.evaluate())
+    features, targets = il.load_images()
+    hist = model.fit(x=features.values / 255.0, y=targets.values, epochs=10, validation_split=.2)
     print(hist.history["accuracy"])
+    print(model.evaluate(features.values / 255.0, targets.values))
+    il2 = ImageLoader(image_dir="./images/asl-alphabet-test")
+    train_x, train_y = il2.load_images()
+    print(model.evaluate(train_x.values / 255.0, train_y.values))
 
 
 if __name__ == "__main__":
