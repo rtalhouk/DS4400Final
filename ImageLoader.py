@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 import os
 import time
+import random
 from PIL import Image
+from keras.preprocessing import image_dataset_from_directory
 from sklearn.preprocessing import StandardScaler
 from typing import Tuple, Optional
 
@@ -101,3 +103,15 @@ class ImageLoader:
             images.loc[curr_idx] = img_data
             if classes is not None:
                 classes.loc[curr_idx] = class_map[letter]
+
+    @staticmethod
+    def load_images_for_keras(image_dir: str = "./images/asl_alphabet_train/asl_alphabet_train",
+                              color_mode: str = "grayscale", image_size: Tuple[int, int] = (200, 200),
+                              validation_split: float = .2, seed: int = random.randrange(2**16)):
+        train = image_dataset_from_directory(image_dir, labels="inferred", color_mode=color_mode,
+                                             image_size=image_size, validation_split=validation_split,
+                                             subset="training", seed=seed)
+        valid = image_dataset_from_directory(image_dir, labels="inferred", color_mode=color_mode,
+                                             image_size=image_size, validation_split=validation_split,
+                                             subset="validation", seed=seed)
+        return train, valid
