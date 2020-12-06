@@ -4,37 +4,25 @@ import time
 from ImageLoader import ImageLoader
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
-from sklearn.preprocessing import StandardScaler
-from typing import Tuple
-
-
-def load_image_dataset() -> Tuple[pd.DataFrame, pd.Series]:
-    loader = ImageLoader()
-    _, y_train = loader.load_images()
-    features = loader.scale_data()
-    return features, y_train
 
 
 def grid_search_log_reg(x_train: pd.DataFrame, y_train: pd.Series) -> LogisticRegression:
     start = time.time()
     grid = GridSearchCV(LogisticRegression(penalty="l1", solver="saga", tol=1e-2, max_iter=70),
-                        param_grid={"C": [1, .9, .5, .1, .05, .01, .001]}, cv=2)
-    # Logistic regression grid search fit finished in: 9.175912071665127 hours
-    # Best Params: {'C': 0.1} Best Score: 0.1995057471264368
-    # 0.847287356321839 (train)
-    # 0.029885057471264367 (test)
+                        param_grid={"C": [.5, .1, .05, .01]}, cv=2, n_jobs=3)
     grid.fit(x_train, y_train)
     print("Logistic regression grid search fit finished in:", (time.time() - start) / 3600, "hours")
     print("Best Params:", grid.best_params_, "Best Score:", grid.best_score_)
+    print(grid.cv_results_)
     return grid.best_estimator_
 
 
-def create_best(x_train: pd.DataFrame, y_train: pd.Series) -> LogisticRegression:
-    start = time.time()
-    lr = LogisticRegression(penalty="l1", solver="saga", tol=1e-2, max_iter=70, C=.1)
-    lr.fit(x_train, y_train)
-    print("Logistic regression final fit finished in:", (time.time() - start) / 3600, "hours")
-    return lr
+# def create_best(x_train: pd.DataFrame, y_train: pd.Series) -> LogisticRegression:
+#     start = time.time()
+#     lr = LogisticRegression(penalty="l1", solver="saga", tol=1e-2, max_iter=70, C=.1)
+#     lr.fit(x_train, y_train)
+#     print("Logistic regression final fit finished in:", (time.time() - start) / 3600, "hours")
+#     return lr
 
 
 def save_theta(lr: LogisticRegression, filename: str = "log_reg_theta.pkl") -> None:
@@ -48,10 +36,10 @@ def load_theta(filename: str = "log_reg_theta.pkl") -> LogisticRegression:
 
 
 def train_lr_model() -> None:
-    features, target = load_image_dataset()
-    #lr = grid_search_log_reg(features, target)
-    lr = create_best(features, target)
+    il = ImageLoader().load_images()
+    lr = grid_search_log_reg(il.train_images, il.train_classes)
     save_theta(lr)
+    print(lr.score(il.test_images, il.test_classes))
 
 
 if __name__ == "__main__":
