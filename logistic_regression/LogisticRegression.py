@@ -1,7 +1,7 @@
 import pandas as pd
 import pickle
 import time
-from ImageLoader import ImageLoader
+from util.ImageLoader import ImageLoader
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 
