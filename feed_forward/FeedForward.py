@@ -1,5 +1,5 @@
 import time
-from util.ImageLoader import ImageLoader
+from logistic_regression.ImageLoader import ImageLoader
 from keras import layers
 from keras.models import Sequential
 from keras.losses import MeanSquaredError
