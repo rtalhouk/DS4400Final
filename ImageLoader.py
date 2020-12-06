@@ -4,6 +4,7 @@ import os
 import time
 from PIL import Image
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 from typing import Tuple, Optional
 
 
@@ -28,12 +29,16 @@ class ImageLoader:
         self.size = image_size
         self.images = None
         self.classes = None
+        self.x_train = None
+        self.x_test = None
+        self.y_train = None
+        self.y_test = None
         self.grayscale = grayscale
         self.scaler = StandardScaler(copy=True)
 
-    def load_images(self) -> Tuple[pd.DataFrame, pd.Series]:
-        if self.images is not None:
-            return self.images, self.classes
+    def load_images(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+        if self.x_train is not None:
+            return self.x_train, self.x_test, self.y_train, self.y_test
 
         print("Allocating image space...")
         size = self.get_dataset_size(self.image_dir, self.size)
@@ -48,8 +53,9 @@ class ImageLoader:
                               next_idx)
             print(entry.name, "loaded.")
         print("Done loading images, took", (time.time() - start) / 60, "minutes")
-        self.scaler.fit(self.images)
-        return self.images, self.classes
+        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.images, self.classes, test_size=0.2)
+        self.scaler.fit(self.x_train)
+        return self.x_train, self.x_test, self.y_train, self.y_test
 
     def scale_data(self, data: Optional[pd.DataFrame] = None) -> pd.DataFrame:
         start = time.time()
