@@ -97,7 +97,7 @@ class ImageLoader:
                 classes.loc[curr_idx] = letter
 
     @staticmethod
-    def load_images_for_keras(image_dir: str = "./images/asl_alphabet_train/asl_alphabet_train",
+    def load_images_for_keras(image_dir: str = "../images/asl_alphabet_train/asl_alphabet_train",
                               color_mode: str = "grayscale", image_size: Tuple[int, int] = (80, 80),
                               validation_split: float = .2, seed: int = random.randrange(2**16)):
         train = image_dataset_from_directory(image_dir, labels="inferred", color_mode=color_mode,

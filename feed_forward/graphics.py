@@ -1,7 +1,12 @@
 import json
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
+from keras.models import load_model
+from logistic_regression.ImageLoader import ImageLoader
+from sklearn.metrics import classification_report
+from logistic_regression.graphics import graph_report
 
 
 def generate_accuracy_graph(res, hist):
@@ -17,6 +22,18 @@ def generate_accuracy_graph(res, hist):
                  x="round", y="score", hue="subtype")
     plt.title("Training and Validation Loss")
     plt.show()
+
+
+def score(model, test_data):
+    target = []
+    for image in test_data.as_numpy_iterator():
+        for res in image[1]:
+            target.append(res)
+
+    pred = model.predict(test_data)
+    target = np.array(target)
+    report = classification_report(target, pred, output_dict=True)
+    return report
 
 
 def main():
@@ -49,6 +66,9 @@ def main():
                            "[3200, 1600]", "[3200, 1600, 800]",
                            "[3200, 1600, 800]"]
     generate_accuracy_graph(final_hist, history)
+    model = load_model("./models/model0")
+    report = score(model, ImageLoader.load_images_for_keras()[1])
+    graph_report(report)
 
 
 if __name__ == "__main__":

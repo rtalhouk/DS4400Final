@@ -5,7 +5,6 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import classification_report, roc_auc_score
 from logistic_regression.ImageLoader import ImageLoader
 
-loader = ImageLoader().load_images()
 letters = [chr(i) for i in range(ord("A"), ord("Z") + 1)]
 letters.insert(4, "del")
 letters.insert(15, "nothing")
@@ -50,6 +49,7 @@ def main():
     with open("./log_reg_theta.pkl", "rb") as file:
         lr = pickle.load(file)
 
+    loader = ImageLoader().load_images()
     # res = pd.read_csv("./lr_grid_search_results.csv")
     # sns.barplot(data=res, x="param_C", y="mean_test_score")
     # plt.show()
@@ -57,6 +57,7 @@ def main():
 
     report = score(lr, loader)
     graph_report(report)
+
 
 if __name__ == "__main__":
     main()
