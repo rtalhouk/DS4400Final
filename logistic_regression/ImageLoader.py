@@ -10,9 +10,9 @@ from typing import Tuple
 
 
 class ImageLoader:
-    def __init__(self, image_dir: str = "./images/asl_alphabet_train/asl_alphabet_train/",
+    def __init__(self, image_dir: str = "../images/asl_alphabet_train/asl_alphabet_train/",
                  grayscale: bool = True, image_size: int = 80,
-                 seed: int = random.randrange(2**16), train_size: float = .8) -> None:
+                 seed: int = 12345, train_size: float = .8) -> None:
         """
         Prepares the image loader with the directory of images.
 
