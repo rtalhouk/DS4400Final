@@ -53,7 +53,8 @@ class ImageLoader:
                               next_idx)
             print(entry.name, "loaded.")
         print("Done loading images, took", (time.time() - start) / 60, "minutes")
-        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.images, self.classes, test_size=0.2)
+        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.images, self.classes, test_size=0.2,
+                                                                                random_state=12345)
         self.scaler.fit(self.x_train)
         return self.x_train, self.x_test, self.y_train, self.y_test
 

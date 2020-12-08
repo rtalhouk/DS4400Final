@@ -2,7 +2,7 @@ import time
 from logistic_regression.ImageLoader import ImageLoader
 from keras import layers
 from keras.models import Sequential
-from keras.losses import MeanSquaredError
+from keras.losses import SparseCategoricalCrossentropy
 from typing import List
 from keras.optimizers import Adam
 from keras.optimizers.schedules import ExponentialDecay
@@ -19,8 +19,9 @@ def get_model(size_list: List[List[int]]) -> List[Sequential]:
             model.add(layers.Dropout(.5))
             model.add(layers.Dense(size, activation="relu"))
         model.add(layers.Dense(29, activation="softmax"))
-        decay = ExponentialDecay(1e-2, decay_steps=10000, decay_rate=.9)
-        model.compile(optimizer=Adam(learning_rate=decay), loss=MeanSquaredError(),
+        decay = ExponentialDecay(1e-3, decay_steps=10000, decay_rate=.9)
+        model.compile(optimizer=Adam(learning_rate=decay),
+                      loss=SparseCategoricalCrossentropy(),
                       metrics=['accuracy'])
         res.append(model)
 
@@ -44,7 +45,7 @@ def main():
     start = time.time()
     for model in models:
         train, valid = ImageLoader.load_images_for_keras()
-        hist = model.fit(train, epochs=100, validation_data=valid)
+        hist = model.fit(train, epochs=10, validation_data=valid)
         print(hist.history["accuracy"])
         train = model.evaluate(train)
         valid = model.evaluate(valid)
