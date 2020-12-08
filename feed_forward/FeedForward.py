@@ -18,9 +18,10 @@ def get_model(size_list: List[List[int]]) -> List[Sequential]:
         for size in sizes:
             model.add(layers.Dropout(.5))
             model.add(layers.Dense(size, activation="relu"))
-        model.add(layers.Dense(29))#, activation="softmax"))
-        # decay = ExponentialDecay(1e-2, decay_steps=10000, decay_rate=.9)
-        model.compile(optimizer=Adam(), loss=SparseCategoricalCrossentropy(from_logits=True),
+        model.add(layers.Dense(29, activation="softmax"))
+        decay = ExponentialDecay(1e-3, decay_steps=10000, decay_rate=.9)
+        model.compile(optimizer=Adam(learning_rate=decay),
+                      loss=SparseCategoricalCrossentropy(),
                       metrics=['accuracy'])
         res.append(model)
 

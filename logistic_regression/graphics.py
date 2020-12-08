@@ -10,6 +10,8 @@ letters.insert(4, "del")
 letters.insert(15, "nothing")
 letters.insert(21, "space")
 
+letter_map = {i: letter for i, letter in enumerate(letters)}
+
 
 def lr_heatmap(lr):
     coefs = lr.coef_

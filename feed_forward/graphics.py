@@ -1,12 +1,11 @@
 import json
-import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 from keras.models import load_model
 from logistic_regression.ImageLoader import ImageLoader
 from sklearn.metrics import classification_report
-from logistic_regression.graphics import graph_report
+from logistic_regression.graphics import graph_report, letter_map
 
 
 def generate_accuracy_graph(res, hist):
@@ -30,8 +29,8 @@ def score(model, test_data):
         for res in image[1]:
             target.append(res)
 
-    pred = model.predict(test_data)
-    target = np.array(target)
+    pred = pd.Series(model.predict(test_data).argmax(axis=1)).replace(letter_map)
+    target = pd.Series(target).replace(letter_map)
     report = classification_report(target, pred, output_dict=True)
     return report
 
@@ -71,5 +70,13 @@ def main():
     graph_report(report)
 
 
+def unpickle():
+    import pickle
+    with open("./info.pkl", "rb") as file:
+        df = pickle.load(file)
+    df.to_csv("./results.csv")
+
+
 if __name__ == "__main__":
     main()
+    # unpickle()

@@ -44,7 +44,7 @@ class ImageLoader:
         print("Allocating image space...")
         size = self.get_dataset_size(self.image_dir, self.size)
         images = pd.DataFrame(data=np.zeros(size, dtype=np.float32),
-                                   columns=[i for i in range(self.size * self.size)])
+                              columns=[i for i in range(self.size * self.size)])
         classes = pd.Series(data=np.zeros(size[0], dtype=np.byte), index=images.index)
         next_idx = (i for i in images.index)
         print("Done. Loading image sets.")
@@ -99,7 +99,7 @@ class ImageLoader:
     @staticmethod
     def load_images_for_keras(image_dir: str = "../images/asl_alphabet_train/asl_alphabet_train",
                               color_mode: str = "grayscale", image_size: Tuple[int, int] = (80, 80),
-                              validation_split: float = .2, seed: int = random.randrange(2**16)):
+                              validation_split: float = .2, seed: int = 1234321):
         train = image_dataset_from_directory(image_dir, labels="inferred", color_mode=color_mode,
                                              image_size=image_size, validation_split=validation_split,
                                              subset="training", seed=seed)
