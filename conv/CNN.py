@@ -46,7 +46,7 @@ def fit_cnn(train_ds: tf.data.Dataset, val_ds: tf.data.Dataset) -> Tuple[
     model = Sequential([
                         data_augmentation,
                         layers.experimental.preprocessing.Rescaling(1./255, input_shape=(80, 80, 3)),
-                        layers.Conv2D(80, (3, 3), activation='relu', input_shape=(80, 80, 1)),
+                        layers.Conv2D(80, (3, 3), activation='relu', input_shape=(80, 80, 3)),
                         layers.MaxPooling2D((2, 2)),
                         layers.Dropout(0.1),
                         layers.Conv2D(160, (3, 3), activation='relu'),
