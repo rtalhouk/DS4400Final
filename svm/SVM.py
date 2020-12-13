@@ -23,7 +23,7 @@ def load_image_dataset(image_dir) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series
 
 def fit_svm(x_train: pd.DataFrame, y_train: pd.Series) -> LinearSVC:
     start = time.time()
-    svm = LinearSVC(loss="hinge", penalty="l2", C=0.0001)
+    svm = LinearSVC(loss="hinge", penalty="l2", C=0.005)
     svm.fit(x_train, y_train)
     print("LinearSVC fit finished in:", (time.time() - start) / 3600, "hours")
     return svm
@@ -41,7 +41,7 @@ def score_fit_svm(svm: LinearSVC, x_data: pd.DataFrame, y_data: pd.Series) -> Tu
 
 
 
-def save_theta(svm: LinearSVC, filename: str = "svm_theta_0.0001.pkl") -> None:
+def save_theta(svm: LinearSVC, filename: str = "svm_theta_mixed_set_0.005.pkl") -> None:
     with open(filename, "wb") as file:
         pickle.dump(svm, file)
 
@@ -72,4 +72,4 @@ def score_loaded():
 
 
 if __name__ == "__main__":
-     score_loaded()
+     train_svm_model()
