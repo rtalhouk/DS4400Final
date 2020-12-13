@@ -1,11 +1,15 @@
 import json
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 from keras.models import load_model
+from tensorflow.nn import softmax
 from logistic_regression.ImageLoader import ImageLoader
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve
+from sklearn.preprocessing import label_binarize
 from logistic_regression.graphics import graph_report, letter_map
+import tensorflow_datasets as tfds
 
 
 def generate_accuracy_graph(res, hist):
@@ -24,15 +28,38 @@ def generate_accuracy_graph(res, hist):
 
 
 def score(model, test_data):
-    target = []
-    for image in test_data.as_numpy_iterator():
-        for res in image[1]:
-            target.append(res)
+    target = None
+    preds = None
+    class_probs = None
+    for image_batch, label_batch in tfds.as_numpy(test_data):
+        if target is None:
+            target = label_batch
+        else:
+            target = np.append(target, label_batch)
+        predictions = model.predict(image_batch)
+        classes = []
+        scores = []
+        ins_class_probs = []
+        for i, p in enumerate(predictions):
+            score = softmax(p)
+            classes.append(np.argmax(score))
+            scores.append(score[label_batch[i]])
+            ins_class_probs.append(score.numpy())
+        if preds is None:
+            preds = np.array(classes)
+            class_probs = np.array(ins_class_probs)
+        else:
+            preds = np.append(preds, np.array(classes))
+            class_probs = np.append(class_probs, np.array(ins_class_probs))
 
-    pred = pd.Series(model.predict(test_data).argmax(axis=1)).replace(letter_map)
+    pred = pd.Series(preds).replace(letter_map)
     target = pd.Series(target).replace(letter_map)
     report = classification_report(target, pred, output_dict=True)
-    return report
+    bin_targets = label_binarize(target, classes=list(letter_map.values()))
+    auc_score = roc_auc_score(bin_targets, class_probs.reshape((-1, 29)), average="micro")
+    conf_matrix = confusion_matrix(target, pred)
+    fpr, tpr, _ = roc_curve(bin_targets.ravel(), class_probs)
+    return report, conf_matrix, (fpr, tpr), auc_score
 
 
 def main():
@@ -50,7 +77,7 @@ def main():
                                       "round": j},
                                      ignore_index=True)
             history = history.append({"model": i, 'type': "loss", "subtype": 'val_loss', 'score': data['val_loss'][j],
-                                     "round": j},
+                                      "round": j},
                                      ignore_index=True)
             history = history.append({"model": i, 'type': "acc", "subtype": 'val_acc', 'score': data['val_accuracy'][j],
                                       "round": j},
@@ -65,18 +92,10 @@ def main():
                            "[3200, 1600]", "[3200, 1600, 800]",
                            "[3200, 1600, 800]"]
     generate_accuracy_graph(final_hist, history)
-    model = load_model("./models/model0")
-    report = score(model, ImageLoader.load_images_for_keras()[1])
-    graph_report(report)
-
-
-def unpickle():
-    import pickle
-    with open("./info.pkl", "rb") as file:
-        df = pickle.load(file)
-    df.to_csv("./results.csv")
+    model = load_model("./models/model1")
+    report, conf_matrix, rates, auc = score(model, ImageLoader.load_images_for_keras()[1])
+    graph_report(report, conf_matrix, rates, auc)
 
 
 if __name__ == "__main__":
     main()
-    # unpickle()
