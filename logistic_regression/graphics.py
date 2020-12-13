@@ -2,8 +2,9 @@ import pandas as pd
 import seaborn as sns
 import pickle
 from matplotlib import pyplot as plt
-from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix
+from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix, roc_curve
 from logistic_regression.ImageLoader import ImageLoader
+from sklearn.preprocessing import label_binarize
 
 letters = [chr(i) for i in range(ord("A"), ord("Z") + 1)]
 letters.insert(4, "del")
@@ -23,14 +24,18 @@ def lr_heatmap(lr):
 
 def score(lr, loader):
     pred = lr.predict(loader.test_images)
+    class_probs = lr.predict_proba(loader.test_images)
     report = classification_report(loader.test_classes,
                                    pred,
                                    output_dict=True)
     conf_matrix = confusion_matrix(loader.test_classes, pred)
-    return report, conf_matrix
+    bin_targets = label_binarize(loader.test_classes, classes=letters)
+    auc_score = roc_auc_score(bin_targets, class_probs)
+    fpr, tpr, _ = roc_curve(bin_targets.ravel(), class_probs.ravel())
+    return report, conf_matrix, (fpr, tpr), auc_score
 
 
-def graph_report(report, conf_matrix, rates, auc):
+def graph_report(report, conf_matrix, rates, auc, prf_y_range=.7):
     data = pd.DataFrame(columns=["letter", "score", "type"])
     for letter in letters:
         precision = report[letter]["precision"]
@@ -47,7 +52,7 @@ def graph_report(report, conf_matrix, rates, auc):
                             "type": "F1 score"}, ignore_index=True)
     sns.barplot(data=data, x="letter", y="score", hue="type")
     plt.xticks(rotation=90)
-    plt.ylim(.7, 1)
+    plt.ylim(prf_y_range, 1)
     plt.show()
     plt.figure(figsize=(30, 10))
     sns.heatmap(conf_matrix, annot=True, square=False,
@@ -74,8 +79,8 @@ def main():
     # plt.show()
     # lr_heatmap()
 
-    report, conf_matrix = score(lr, loader)
-    graph_report(report, conf_matrix)
+    report, conf_matrix, rates, auc = score(lr, loader)
+    graph_report(report, conf_matrix, rates, auc, prf_y_range=.5)
 
 
 if __name__ == "__main__":
