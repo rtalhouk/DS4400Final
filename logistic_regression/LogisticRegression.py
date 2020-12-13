@@ -18,12 +18,12 @@ def grid_search_log_reg(x_train: pd.DataFrame, y_train: pd.Series) -> LogisticRe
     return grid.best_estimator_
 
 
-# def create_best(x_train: pd.DataFrame, y_train: pd.Series) -> LogisticRegression:
-#     start = time.time()
-#     lr = LogisticRegression(penalty="l1", solver="saga", tol=1e-2, max_iter=70, C=.1)
-#     lr.fit(x_train, y_train)
-#     print("Logistic regression final fit finished in:", (time.time() - start) / 3600, "hours")
-#     return lr
+def create_best(x_train: pd.DataFrame, y_train: pd.Series) -> LogisticRegression:
+    start = time.time()
+    lr = LogisticRegression(penalty="l1", solver="saga", tol=1e-2, max_iter=70, C=.1)
+    lr.fit(x_train, y_train)
+    print("Logistic regression final fit finished in:", (time.time() - start) / 3600, "hours")
+    return lr
 
 
 def save_theta(lr: LogisticRegression, filename: str = "log_reg_theta.pkl") -> None:

@@ -92,7 +92,7 @@ def main():
                            "[3200, 1600]", "[3200, 1600, 800]",
                            "[3200, 1600, 800]"]
     generate_accuracy_graph(final_hist, history)
-    model = load_model("./models/model1")
+    model = load_model("models/strict/model1")
     report, conf_matrix, rates, auc = score(model, ImageLoader.load_images_for_keras()[1])
     graph_report(report, conf_matrix, rates, auc)
 
