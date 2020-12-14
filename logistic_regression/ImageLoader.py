@@ -12,7 +12,7 @@ from typing import Tuple
 class ImageLoader:
     def __init__(self, image_dir: str = "../images/asl_alphabet_train/asl_alphabet_train/",
                  grayscale: bool = True, image_size: int = 80,
-                 seed: int = 12345, train_size: float = .8) -> None:
+                 seed: int = 12345, train_size: float = .8, shuffle=True) -> None:
         """
         Prepares the image loader with the directory of images.
 
@@ -36,6 +36,7 @@ class ImageLoader:
         self.test_images = None
         self.test_classes = None
         self.train_size = train_size
+        self.shuffle = shuffle
 
     def load_images(self) -> "ImageLoader":
         if self.train_images is not None:
@@ -55,13 +56,16 @@ class ImageLoader:
             print(entry.name, "loaded.")
         print("Done loading images, took", (time.time() - start) / 60, "minutes")
 
-        train_x, test_x, train_y, test_y = train_test_split(images, classes, random_state=self.seed,
-                                                            train_size=self.train_size)
-
-        self.train_images = train_x
-        self.train_classes = train_y
-        self.test_images = test_x
-        self.test_classes = test_y
+        if self.shuffle:
+            train_x, test_x, train_y, test_y = train_test_split(images, classes, random_state=self.seed,
+                                                                train_size=self.train_size)
+            self.train_images = train_x
+            self.train_classes = train_y
+            self.test_images = test_x
+            self.test_classes = test_y
+        else:
+            self.train_images = images
+            self.train_classes = classes
         return self
 
     @staticmethod

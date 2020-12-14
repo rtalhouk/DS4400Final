@@ -63,7 +63,7 @@ def score(model, test_data):
 
 
 def main():
-    res = pd.read_csv("./results.csv")
+    res = pd.read_csv("./results_full.csv")
     history = pd.DataFrame(columns=["model", 'type', "subtype", 'score', 'round'])
     for i, hist in enumerate(res["history"]):
         data = json.loads(hist.replace("'", '"'))
@@ -92,7 +92,7 @@ def main():
                            "[3200, 1600]", "[3200, 1600, 800]",
                            "[3200, 1600, 800]"]
     generate_accuracy_graph(final_hist, history)
-    model = load_model("models/strict/model1")
+    model = load_model("models/full/model1")
     report, conf_matrix, rates, auc = score(model, ImageLoader.load_images_for_keras()[1])
     graph_report(report, conf_matrix, rates, auc)
 
