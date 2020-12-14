@@ -9,7 +9,7 @@ from typing import Tuple, Optional
 
 
 class ImageLoader:
-    def __init__(self, image_dir: str = "./images/asl_alphabet_train/asl_alphabet_train/",
+    def __init__(self, image_dir: str = "../images/asl_alphabet_train/asl_alphabet_train/",
                  grayscale: bool = True, image_size: int = 80) -> None:
         """
         Prepares the image loader with the directory of images.
