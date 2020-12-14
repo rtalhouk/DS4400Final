@@ -6,6 +6,11 @@ from logistic_regression.graphics import letter_map
 
 
 def generate_class_heatmaps():
+    """
+    Plots a grapch with heatmaps of the average pixel value for each class.
+
+    :return: None
+    """
     loader = ImageLoader(shuffle=False).load_images()
 
     averages = {}
@@ -25,6 +30,11 @@ def generate_class_heatmaps():
 
 
 def plot_class_images():
+    """
+    Plots a graph of samples of the images in randomized classes.
+
+    :return: None
+    """
     i = 1
     plt.figure(figsize=(10, 10))
     for letter in os.scandir("../images/asl_alphabet_train/asl_alphabet_train"):

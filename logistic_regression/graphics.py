@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import seaborn as sns
 import pickle
@@ -6,24 +7,26 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix, roc_curve
 from logistic_regression.ImageLoader import ImageLoader
 from sklearn.preprocessing import label_binarize
+from typing import Tuple
 
+# A list representing the letters
 letters = [chr(i) for i in range(ord("A"), ord("Z") + 1)]
 letters.insert(4, "del")
 letters.insert(15, "nothing")
 letters.insert(21, "space")
 
+# A map mapping the index to each letter
 letter_map = {i: letter for i, letter in enumerate(letters)}
 
 
-def lr_heatmap(lr):
-    coefs = lr.coef_
-    for cls in range(29):
-        sns.heatmap(coefs[cls].reshape((80, 80)))
-        plt.title(letters[cls])
-        plt.show()
+def score(lr, loader: ImageLoader) -> Tuple[np.array, np.array, Tuple[np.array, np.array], float]:
+    """
+    Score and get informational data used in the graph_report function.
 
-
-def score(lr, loader):
+    :param lr: The logistic regression to score
+    :param loader: The imageloader to get image data from
+    :return: A tuple containing the classification_report, confusion_matrix, a tuple of fpr and tpr values, and the auc
+    """
     pred = lr.predict(loader.test_images)
     class_probs = lr.predict_proba(loader.test_images)
     report = classification_report(loader.test_classes,
@@ -36,7 +39,19 @@ def score(lr, loader):
     return report, conf_matrix, (fpr, tpr), auc_score
 
 
-def graph_report(report, conf_matrix, rates, auc, prf_y_range=.7):
+def graph_report(report: np.array, conf_matrix: np.array, rates: Tuple[np.array, np.array], auc: float,
+                 prf_y_range: float = .7) -> None:
+    """
+    Create graphs from the given information.
+
+    :param report: A classification_report
+    :param conf_matrix: A confusion_matrix
+    :param rates: A tuple of FPR and TPR rates
+    :param auc: The AUC
+    :param prf_y_range: The range of Y values to show for the classification_report output
+    :return:
+    """
+    # Create the precision, recall, and F1 graph
     data = pd.DataFrame(columns=["letter", "score", "type"])
     for letter in letters:
         precision = report[letter]["precision"]
@@ -55,6 +70,8 @@ def graph_report(report, conf_matrix, rates, auc, prf_y_range=.7):
     plt.xticks(rotation=90)
     plt.ylim(prf_y_range, 1)
     plt.show()
+
+    # Create a heatmap of the confusion matrix
     plt.figure(figsize=(30, 10))
     sns.heatmap(conf_matrix, annot=True, square=False,
                 xticklabels=letter_map.values(), yticklabels=letter_map.values())
@@ -62,6 +79,8 @@ def graph_report(report, conf_matrix, rates, auc, prf_y_range=.7):
     plt.xlabel("True Label")
     plt.ylabel("Predicted Label")
     plt.show()
+
+    # Create a ROC graph with AUC
     sns.lineplot(x=[0, 1], y=[0, 1])
     ax = sns.lineplot(x=rates[0], y=rates[1])
     ax.text(.75, 0, "AUC: {:.5f}".format(auc), bbox={"boxstyle": "round"})
@@ -70,13 +89,24 @@ def graph_report(report, conf_matrix, rates, auc, prf_y_range=.7):
     plt.show()
 
 
-def plot_regularization_values():
+def plot_regularization_values() -> None:
+    """
+    Plots the regularization values and scores for a logistic regression.
+
+    :return:
+    """
     df = pd.read_csv("./lr_grid_search_results_strict.csv")
     sns.lineplot(data=df, x=[1, .5, .1], y="mean_test_score")
     plt.show()
 
 
 def plot_lr_heatmaps(lr):
+    """
+    Plots heatmaps for each class in a logistic regression's coefficient matrix.
+
+    :param lr: The logistic regression
+    :return:
+    """
     i = 1
     plt.figure(figsize=(10, 10))
     for letter, image in random.sample(list(zip(lr.classes_, lr.coef_)), 9):
