@@ -38,7 +38,7 @@ def save_theta(lr: LogisticRegression, filename: str = "log_reg_theta.pkl") -> N
         pickle.dump(lr, file)
 
 
-def load_theta(filename: str = "log_reg_theta_strict.pkl") -> LogisticRegression:
+def load_theta(filename: str = "log_reg_theta.pkl") -> LogisticRegression:
     """
     Loads the pickled logistic regression.
 
