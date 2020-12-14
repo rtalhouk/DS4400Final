@@ -1,6 +1,7 @@
 import pandas as pd
 import seaborn as sns
 import pickle
+import random
 from matplotlib import pyplot as plt
 from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix, roc_curve
 from logistic_regression.ImageLoader import ImageLoader
@@ -69,19 +70,33 @@ def graph_report(report, conf_matrix, rates, auc, prf_y_range=.7):
     plt.show()
 
 
-def main():
-    with open("./log_reg_theta.pkl", "rb") as file:
-        lr = pickle.load(file)
+def plot_regularization_values():
+    df = pd.read_csv("./lr_grid_search_results_strict.csv")
+    sns.lineplot(data=df, x=[1, .5, .1], y="mean_test_score")
+    plt.show()
 
+
+def plot_lr_heatmaps(lr):
+    i = 1
+    plt.figure(figsize=(10, 10))
+    for letter, image in random.sample(list(zip(lr.classes_, lr.coef_)), 9):
+        plt.subplot(3, 3, i)
+        ax = sns.heatmap(data=image.reshape((80, 80)))
+        ax.set_title(letter)
+        i += 1
+    plt.show()
+
+
+def main(lr):
     loader = ImageLoader().load_images()
-    # res = pd.read_csv("./lr_grid_search_results.csv")
-    # sns.barplot(data=res, x="param_C", y="mean_test_score")
-    # plt.show()
-    # lr_heatmap()
-
     report, conf_matrix, rates, auc = score(lr, loader)
     graph_report(report, conf_matrix, rates, auc, prf_y_range=.5)
 
 
 if __name__ == "__main__":
-    main()
+    # plot_regularization_values()
+    with open("./log_reg_theta_strict.pkl", "rb") as file:
+        lr = pickle.load(file)
+
+    plot_lr_heatmaps(lr)
+    # main(lr)
