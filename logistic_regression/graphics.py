@@ -89,13 +89,12 @@ def graph_report(report: np.array, conf_matrix: np.array, rates: Tuple[np.array,
     plt.show()
 
 
-def plot_regularization_values() -> None:
+def plot_regularization_values(df) -> None:
     """
     Plots the regularization values and scores for a logistic regression.
 
     :return:
     """
-    df = pd.read_csv("./lr_grid_search_results_strict.csv")
     sns.lineplot(data=df, x=[1, .5, .1], y="mean_test_score")
     plt.show()
 
@@ -117,16 +116,26 @@ def plot_lr_heatmaps(lr):
     plt.show()
 
 
-def main(lr):
-    loader = ImageLoader().load_images()
+def main(lr, loader):
     report, conf_matrix, rates, auc = score(lr, loader)
     graph_report(report, conf_matrix, rates, auc, prf_y_range=.5)
 
 
 if __name__ == "__main__":
     # plot_regularization_values()
-    with open("./log_reg_theta_strict.pkl", "rb") as file:
-        lr = pickle.load(file)
+    df_strict = pd.read_csv("./lr_grid_search_results_strict.csv")
+    df_full = pd.read_csv("./lr_grid_search_results_full.csv")
 
-    plot_lr_heatmaps(lr)
-    # main(lr)
+    plot_regularization_values(df_strict)
+    plot_regularization_values(df_full)
+
+    with open("./log_reg_theta_strict.pkl", "rb") as file:
+        lr_strict = pickle.load(file)
+    with open("./log_reg_theta_full.pkl", "rb") as file:
+        lr_full = pickle.load(file)
+    loader = ImageLoader().load_images()
+
+    plot_lr_heatmaps(lr_strict)
+    main(lr_strict, loader)
+    plot_lr_heatmaps(lr_full)
+    main(lr_full, loader)
