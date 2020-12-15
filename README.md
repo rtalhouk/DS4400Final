@@ -78,7 +78,14 @@ The strict and full datasets refer to the dataset used for training.
 - __Full__: The dataset consisting of the main dataset, as well as the external testing 
   dataset (the first _AND_ second one downloaded in the setup instructions)
 
-### Support Vector Machine
+### Support Vector Machine (SVC)
+__All custom SVC files mentioned in this section are in the svm/ directory.__
+
+Running SVM.py file will load the model and result metrics from the most accurate support
+vector classifier (no regularization). Several other models trained on different datasets
+and with different regularization magnitudes are also in the directory with the  `.pkl` extension
+and can be accessed by passing the filename to the `load_theta()` function. All methods can
+be imported to train your own LinearSVC classifier.
 
 ### Feed Forward Neural Network (FFNN)
 
@@ -102,3 +109,13 @@ carries over in the filenames: \*_strict\* and \*_full\*.
   results_full.csv is a csv file containing the histories and results of each model trained.
 
 ### Convolutional Neural Network
+There is only one file associated with the convolutional neural network file, and it is in the `conv/`
+directory. The file is a iPython notebook originally run in colab but exported to Github.
+
+There is one cell which combines the orignal Kaggle dataset with the smaller mixed datset, and can be
+identified as the only one that imports the Python `os` library. It is the fourth cell in the notebook.
+If you want to train a model only on the original dataset, do not run this command. All others must be run.
+
+Some aspects of this notebook will likely need to be changed to run in your own colab environment. Notably
+the notebook assumes that Google Drive is mounted to your colab runtime for saving and loading Tensorflow models.
+Look for `model.save()` and `load_model()` and adjust the filepaths accordingly.
